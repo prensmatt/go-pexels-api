@@ -4,9 +4,16 @@ import(
 	"fmt"
 	"net/http"
 	"os"
+	"log"
 	"encoding/json"
 	"strconv"
 	"time"
+	"io/ioutil"
+)
+
+const(
+	PhotoApi = "https://api.pexels.com/v1"
+	VideoApi = "https://api.pexels.com/videos"
 )
 
 type Client struct{
@@ -22,7 +29,7 @@ type Photo struct{
 	URL								string			`json:"url"`
 	Photographer			string			`json:"photographer"`
 	PhotographerURL		string			`json:"photographer_url"`
-	Src								PhotoSource	`json:"json:"src"`
+	Src								PhotoSource	`json:"src"`
 }
 
 type PhotoSource struct{
@@ -37,11 +44,6 @@ type PhotoSource struct{
 	Tiny				string		`json:"tiny"`
 }
 
-func NewClient(token string) *Client{
-	c := http.Client()
-	return &Client{Token: token, hc: c}
-}
-
 type SearchResult struct{
 	Page 					int32	`json:"page"`
 	PerPage 			int32  `json:"per_page"`
@@ -50,21 +52,43 @@ type SearchResult struct{
 	Photos 				[]Photo	`json:"photos"`
 }
 
-const(
-	PhotoApi = "https://api.pexels.com/v1"
-	VideoApi = "https://api.pexels.com/videos"
-)
+func NewClient(token string) *Client{
+	c := http.Client{}
+	return &Client{Token: token, hc: c}
+}
+
+func (c *Client) SearchPhotos(query string, perPage, page int)(*SearchResult, error){
+	url := fmt.Sprintf(PhotoApi + "/search?query=%s&per_page=%d&page=%d", query, perPage, page)
+	resp, err := c.requestDoWithAuth("GET", url)
+	if err != nil{
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil{
+		return nil,err
+	}
+	var result SearchResult
+
+	err = json.Unmarshal(data, &result)
+
+	return &result, err
+}
+
+
+
 
 func main(){
 	os.Setenv("PexelsToken","F3hzZ2J0a00nhBk8qucFyRDO1qhL7ixftLqMUacH9dfWNOP0Tq1OTdQM")
 
-	var TOKEN := os.Getenv("PexelsToken")
+	var TOKEN = os.Getenv("PexelsToken")
 	var c = NewClient(TOKEN)
 
-	result, err := c.SearchPhotos("waves")
+	result, err := c.SearchPhotos("waves",15,1)
 
 	if err != nil{
-		fmt.Errorf("Search error: %v", err)
+		log.Fatal("Search error: ", err)
 	}
 	fmt.Println(result)
 }
