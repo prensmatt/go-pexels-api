@@ -78,6 +78,24 @@ func (c *Client) SearchPhotos(query string, perPage, page int)(*SearchResult, er
 
 
 
+func(c *Client) requestDoWithAuth(method, url string)(*http.Response, error){
+	req, err := http.NewRequest(method, url, nil)
+	if err != nil{
+		return nil, err
+	}
+	req.Header.Add("Authorization", c.Token)
+	resp, err := c.hc.Do(req)
+	if err != nil{
+		return nil, err
+	}
+	times, err := strconv.Atoi(resp.Header.Get("X-Ratelimit-Remaining"))
+	if err != nil{
+		return resp, nil
+	}
+	c.RemainingTimes = int32(times)
+	return resp, nil
+}
+
 
 func main(){
 	os.Setenv("PexelsToken","F3hzZ2J0a00nhBk8qucFyRDO1qhL7ixftLqMUacH9dfWNOP0Tq1OTdQM")
