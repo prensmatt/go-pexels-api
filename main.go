@@ -9,6 +9,17 @@ import(
 	"time"
 )
 
+type Client struct{
+	Token string
+	hc http.Client
+	RemainingTimes int32
+}
+
+func NewClient(token string) *Client{
+	c := http.Client()
+	return &Client{Token: token, hc: c}
+}
+
 const(
 	PhotoApi = "https://api.pexels.com/v1"
 	VideoApi = "https://api.pexels.com/videos"
