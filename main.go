@@ -60,6 +60,49 @@ type CuratedResult struct{
 	Photos      []Photo			`json:"photos"`
 }
 
+type VideoSearchResult struct{
+	Page						int32			`json:"page"`
+	PerPage					int32			`json:"per_page"`
+	TotalResults		int32			`json:"total_results"`
+	NextPage				int32			`json:"next_page"`
+	Videos					[]Video		`json:"videos"`
+}
+
+type Video struct{
+	ID						int32						`json:"id"`
+	Width					int32						`json:"width"`
+	Height				int32						`json:"height"`
+	URL						string					`json:"url"`
+	Image					string					`json:"image"`
+	FullRes				interface{}			`json:"full_res"`
+	Duration			float64					`json:"duration"`
+	VideoFiles		[]VideoFiles		`json:"video_files"`
+	VideoPictures	[]VideoPictures	`json:"video_pictures"`
+}
+
+type PopularVideos struct{
+	Page					int32			`json:"page"`
+	PerPage				int32			`json:"per_page"`
+	TotalResults	int32			`json:"total_result"`
+	URL						string		`json:"url"`
+	Videos				[]Video		`json:"videos"`
+}
+
+type VideoFiles struct{
+	ID				int32			`json:"id"`
+	Quality		string		`json:"quality"`
+	FileType	string		`json:"file_type"`
+	Width			int32			`json:"width"`
+	Height		int32			`json:"height"`
+	Link			string		`json:"link"`
+}
+
+type VideoPictures struct{
+	ID				int32		`json:"id"`
+	Picture		string	`json:"picture"`
+	Number		int32		`json:"number"`
+}
+
 
 func NewClient(token string) *Client{
 	c := http.Client{}
@@ -150,6 +193,16 @@ func(c *Client) GetRandomPhoto()(*Photo, error){
 	return nil, err
 }
 
+func (c *Client) SearchVideo(query string, perPage, page int)(*VideoSearchResult, error){
+
+}
+
+func (c *Client) PopularVideo(perPage, page int)(*PopularVideos, error){
+
+}
+func (c *Client) GetRandomVideo()(*Video, error){
+
+}
 
 func main(){
 	os.Setenv("PexelsToken","F3hzZ2J0a00nhBk8qucFyRDO1qhL7ixftLqMUacH9dfWNOP0Tq1OTdQM")
