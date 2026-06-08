@@ -194,7 +194,19 @@ func(c *Client) GetRandomPhoto()(*Photo, error){
 }
 
 func (c *Client) SearchVideo(query string, perPage, page int)(*VideoSearchResult, error){
-
+	url := fmt.Sprintf(VideoApi+"/search?query=%s&per_page=%d&page=%d", query, perPage, page)
+	resp, err := c.requestDoWithAuth("GET", url)
+	if err != nil{
+		return nil, err
+	}
+	defer resp.Body.Close()
+	data, err := io.ReadAll(resp.Body)
+	if err != nil{
+		return nil, err
+	}
+	var result VideoSearchResult
+	err = json.Unmarshal(data, &result)
+	return &result, err
 }
 
 func (c *Client) PopularVideo(perPage, page int)(*PopularVideos, error){
