@@ -8,7 +8,7 @@ import(
 	"encoding/json"
 	"strconv"
 	"time"
-	"io/ioutil"
+	"io"
 )
 
 const(
@@ -52,6 +52,14 @@ type SearchResult struct{
 	Photos 				[]Photo	`json:"photos"`
 }
 
+type CuratedResult struct{
+	Page				int32				`json:"page"`
+	PerPage			int32				`json:"per_page"`
+	NextPage		string			`json:"next_page"`
+	Photos      []Photo			`json:"photos"`
+}
+
+
 func NewClient(token string) *Client{
 	c := http.Client{}
 	return &Client{Token: token, hc: c}
@@ -65,7 +73,7 @@ func (c *Client) SearchPhotos(query string, perPage, page int)(*SearchResult, er
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil{
 		return nil,err
 	}
@@ -76,7 +84,25 @@ func (c *Client) SearchPhotos(query string, perPage, page int)(*SearchResult, er
 	return &result, err
 }
 
+func(c *Client) CuratedPhotos(perPage, page int)(*CuratedResult, error){
+	url := fmt.Sprintf(PhotoApi+"/curated?per_page=%d&page=%d",perPage,page)
+	resp, err := c.requestDoWithAuth("GET",url)
+	if err != nil{
+		return nil, err
+	}
+	defer resp.Body.Close()
 
+	data, err := io.ReadAll(resp.Body)
+	if err != nil{
+		return nil, err
+	}
+	var result CuratedResult
+	err = json.Unmarshal(data, &result)
+	if err != nil{
+		return nil, err
+	}
+	return &result, err
+}
 
 func(c *Client) requestDoWithAuth(method, url string)(*http.Response, error){
 	req, err := http.NewRequest(method, url, nil)
@@ -94,6 +120,23 @@ func(c *Client) requestDoWithAuth(method, url string)(*http.Response, error){
 	}
 	c.RemainingTimes = int32(times)
 	return resp, nil
+}
+
+
+func (c *Client) GetPhoto(id int32)(*Photo, error){
+	url := fmt.Sprintf(PhotoApi+"/photos/%d",id)
+	resp, err := c.requestDoWithAuth("GET", url)
+	if err != nil{
+		return nil, err
+	}
+	defer resp.Body.Close()
+	data, err := io.ReadAll(resp.Body)
+	if err != nil{
+		return nil, err
+	}
+	var result Photo
+	err = json.Unmarshal(data, &result)
+	return &result, err
 }
 
 
