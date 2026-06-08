@@ -213,7 +213,7 @@ func (c *Client) PopularVideo(perPage, page int)(*PopularVideos, error){
 	url := fmt.Sprintf(VideoApi+"/popular?per_page=%d&page=%d", perPage,page)
 	resp, err := c.requestDoWithAuth("GET",url)
 	if err != nil{
-		retur nil, err
+		return nil, err
 	}
 	defer resp.Body.Close()
 	data, err := io.ReadAll(resp.Body)
@@ -226,10 +226,16 @@ func (c *Client) PopularVideo(perPage, page int)(*PopularVideos, error){
 }
 
 func (c *Client) GetRandomVideo()(*Video, error){
-
+	rand.Seed(time.Now().Unix())
+	randNum := rand.Intn(1001)
+	result, err := c.PopularVideo(1,randNum)
+	if err == nil && len(result.Videos)==1{
+		return &result.Videos[0], nil
+	}
+	return nil, err
 }
 func (c *Client) GetRemainingRequestsInThisMonth() int32{
-
+	return c.RemainingTimes
 }
 
 func main(){
