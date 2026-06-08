@@ -210,9 +210,25 @@ func (c *Client) SearchVideo(query string, perPage, page int)(*VideoSearchResult
 }
 
 func (c *Client) PopularVideo(perPage, page int)(*PopularVideos, error){
+	url := fmt.Sprintf(VideoApi+"/popular?per_page=%d&page=%d", perPage,page)
+	resp, err := c.requestDoWithAuth("GET",url)
+	if err != nil{
+		retur nil, err
+	}
+	defer resp.Body.Close()
+	data, err := io.ReadAll(resp.Body)
+	if err != nil{
+		return nil, err
+	}
+	var result PopularVideos
+	err = json.Unmarshal(data, &result)
+	return &result, err
+}
+
+func (c *Client) GetRandomVideo()(*Video, error){
 
 }
-func (c *Client) GetRandomVideo()(*Video, error){
+func (c *Client) GetRemainingRequestsInThisMonth() int32{
 
 }
 
